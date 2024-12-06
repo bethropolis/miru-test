@@ -1,6 +1,5 @@
 name: Wails build
 
-
 on:
   push:
     tags:
