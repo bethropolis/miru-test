@@ -1,0 +1,198 @@
+<script>
+  import { before } from "cheerio/dist/commonjs/api/manipulation.js";
+  import { trigerAlert, triggerErrorAlert } from "../../lib/utils/alert.js";
+  import { code, jsonStore, manager } from "../../lib/store/store.js";
+  import Modal from "../utils/modal.svelte";
+  import DropdownInput from "../utils/dropdownInput.svelte";
+  import Globe from "../icons/globe.svelte";
+  import Search from "../icons/search.svelte";
+
+
+  let page = 1;
+  let showModal = false;
+  let modalType = "detail";
+  let searchQuery = "";
+  let detailUrl = "";
+  let detailList = [];
+  let watchUrl = "";
+  let watchList = [];
+
+  let currentlyRunning = false;
+  
+
+  async function loadExtension() {
+    try {
+      await $manager.loadExtension($code);
+      trigerAlert("success", "Extension loaded successfully", 1000);
+    } catch (error) {
+      await triggerErrorAlert(`Error: ${error.message}`);
+    }
+  }
+
+
+  async function callLatest() {
+    beforeRun();
+    detailList = [];
+    await loadExtension();
+    try {
+      const res = await $manager.latest(page);
+      $jsonStore = JSON.stringify(res, null, 2);
+
+      res.map((item) => {
+      detailList.push(item.url);
+      });
+    } catch (error) {
+      await triggerErrorAlert(`Error: ${error.message}`);
+    } finally {
+      currentlyRunning = false;
+    }
+  }
+
+  async function callDetail() {
+    beforeRun();
+    watchList = [];
+    await loadExtension();
+    try {
+      const res = await $manager.detail(detailUrl);
+      $jsonStore = JSON.stringify(res, null, 2);
+
+      const newUrls = res.episodes.flatMap((item) => item.urls);
+      watchList = newUrls.map((item) => item.url);
+    } catch (error) {
+      await triggerErrorAlert(`Error: ${error.message}`);
+    } finally {
+      currentlyRunning = false;
+    }
+  }
+
+  async function callSearch() {
+    beforeRun();
+    detailList = [];
+    await loadExtension();
+    try {
+      const res = await $manager.search(searchQuery);
+      $jsonStore = JSON.stringify(res, null, 2);
+
+      res.map((item) => {
+        detailList.push(item.url);
+      });
+    } catch (error) {
+      await triggerErrorAlert(`Error: ${error.message}`);
+    } finally {
+      currentlyRunning = false;
+    }
+  }
+
+  async function callWatch() {
+    beforeRun();
+    await loadExtension();
+    try {
+      const res = await $manager.watch(watchUrl);
+      $jsonStore = JSON.stringify(res, null, 2);
+    } catch (error) {
+      await triggerErrorAlert(`Error: ${error.message}`);
+    } finally {
+      currentlyRunning = false;
+    }
+  }
+
+
+  function beforeRun() {
+    showModal = false;
+    currentlyRunning = true;
+  }
+
+  async function preDetail() {
+    modalType = "detail";
+    showModal = true;
+  }
+
+  async function preWatch() {
+    modalType = "watch";
+    showModal = true;
+  }
+
+  async function preSearch() {
+    modalType = "search";
+    showModal = true;
+  }
+</script>
+
+<Modal bind:showModal title={modalType} content="fill out the needed info">
+  {#if modalType === "detail"}
+    <div class="p-4 flex items-center gap-2">
+      <label for="detailUrl" class="input input-bordered flex-grow flex items-center gap-2">
+        <DropdownInput
+          placeholder="enter or Select a detail url..."
+          bind:options={detailList}
+          bind:selectedOption={detailUrl}
+        />
+        <Globe />
+      </label>
+
+      <button
+        class="btn btn-sm bg-primary hover:bg-secondary text-white font-bold rounded"
+        on:click={callDetail}>Submit</button
+      >
+    </div>
+  {/if}
+  {#if modalType === "watch"}
+  <div class="p-4 flex items-center gap-2">
+      <label for="watchUrl" class="input input-bordered flex-grow flex items-center gap-2">
+        <DropdownInput
+          placeholder="enter or Select a watch url..."
+          bind:options={watchList}
+          bind:selectedOption={watchUrl}
+        />
+        <Globe />
+      </label>
+
+      <button
+        class="btn btn-sm bg-primary hover:bg-secondary text-white font-bold rounded"
+        on:click={callWatch}>Submit</button
+      >
+    </div>
+  {/if}
+  {#if modalType === "search"}
+    <div class="p-4 flex items-center gap-2">
+      <label for="searchQuery" class="input input-bordered flex-grow flex items-center gap-2">
+        <input
+          id="searchQuery"
+          type="text"
+          placeholder="Enter search query..."
+          bind:value={searchQuery}
+          class="grow"
+        />
+        <Search />
+      </label>
+
+      <button
+        class="btn btn-sm bg-primary hover:bg-secondary text-white font-bold rounded"
+        on:click={callSearch}>Submit</button
+      >
+    </div>
+  {/if}
+</Modal>
+
+<div class="flex px-2 pb-2 justify-between items-center">
+  <h2 class="mb-4 font-bold">Result</h2>
+
+  <div class="buttons">
+    <button
+      class="btn btn-sm bg-primary hover:bg-secondary text-white font-bold rounded-sm " class:btn-disabled={currentlyRunning}
+      on:click={callLatest}>Latest</button
+    >
+    <button
+      class="btn btn-sm bg-primary hover:bg-secondary text-white font-bold rounded-sm" class:btn-disabled={currentlyRunning}
+      on:click={preDetail}>Detail</button
+    >
+    <button
+      class="btn btn-sm bg-primary hover:bg-secondary text-white font-bold rounded-sm" class:btn-disabled={currentlyRunning}
+      on:click={preSearch}>Search</button
+    >
+    <button
+      class="btn btn-sm bg-primary hover:bg-secondary text-white font-bold rounded-sm" class:btn-disabled={currentlyRunning}
+      on:click={preWatch}>Watch</button
+    >
+  </div>
+</div>
