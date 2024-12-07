@@ -38,6 +38,10 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - uses: The-Egg-Corp/wails-build-action@v1.4
         with:
           build-name: ${{ matrix.build.name }}
