@@ -85,6 +85,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Build & Compress
         run: |
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -127,6 +132,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: Build & Compress
         run: |
