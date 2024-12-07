@@ -29,7 +29,7 @@ jobs:
         build: [
           {name: "Miru-test", platform: linux/amd64, os: ubuntu-latest},
           {name: "Miru-test", platform: windows/amd64, os: windows-latest},
-          {name: "Miru-trst", platform: darwin/universal, os: macos-latest}
+          # {name: "Miru-trst", platform: darwin/universal, os: macos-latest}
         ]
 
     runs-on: ${{ matrix.build.os }}
