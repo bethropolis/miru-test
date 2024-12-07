@@ -1,6 +1,25 @@
-name: Wails build
+name: Wails Build
 
-on: [push, pull_request]
+on:
+  # Allows workflow to be manually triggered.
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level"
+        required: true
+        type: choice
+        options: [info, warning, debug]
+        default: "warning"
+      nsis:
+        description: "Create installer"
+        type: boolean
+        required: true
+        default: false
+      package: 
+        description: "Upload artifacts"
+        type: boolean
+        required: false
+        default: true
 
 jobs:
   build:
@@ -8,16 +27,18 @@ jobs:
       fail-fast: false
       matrix:
         build: [
-          {name: wailsTest, platform: linux/amd64, os: ubuntu-latest},
-          {name: wailsTest, platform: windows/amd64, os: windows-latest},
-          {name: wailsTest, platform: darwin/universal, os: macos-latest}
+          {name: "App", platform: linux/amd64, os: ubuntu-latest},
+          {name: "App", platform: windows/amd64, os: windows-latest},
+          {name: "App", platform: darwin/universal, os: macos-latest}
         ]
+
     runs-on: ${{ matrix.build.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: dAppServer/wails-build-action@v2.2
+
+      - uses: The-Egg-Corp/wails-build-action@v1.4
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
