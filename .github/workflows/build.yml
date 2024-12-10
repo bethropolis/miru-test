@@ -69,13 +69,16 @@ jobs:
           wails build --platform ${{matrix.build.platform}} -webview2 "download" -o '${{matrix.build.name}}'
         shell: bash
 
-      - name: Build MacOS App zipped
+       - name: Build MacOS App zipped
         if: runner.os == 'macOS'
         run: |
           echo "building on ${{ matrix.build.platform }}"
-          wails build --platform ${{matrix.build.platform}} -clean
-          zip -r ${{ matrix.build.name }}-macos.zip build/bin/${{ matrix.build.name }}
+          wails build --platform ${{ matrix.build.platform }} -clean
+          echo "Zipping application"
+          cd build/bin
+          zip -r "${{ matrix.build.name }}-macos.zip" "${{ matrix.build.name }}.app"
         shell: bash
+
 
       - name: Build Windows App zipped
         if: runner.os == 'Windows'
