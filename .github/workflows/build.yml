@@ -24,25 +24,85 @@ on:
 jobs:
   build:
     strategy:
+      # Failure in one platform build won't impact the others
       fail-fast: false
       matrix:
-        build: [
-          {name: "Miru-test", platform: linux/amd64, os: ubuntu-latest},
-          {name: "Miru-test", platform: windows/amd64, os: windows-latest},
-          # {name: "Miru-trst", platform: darwin/universal, os: macos-latest}
-        ]
+        build:
+          - name: 'Miru test'
+            platform:  'linux/amd64'
+            os: 'ubuntu-latest'
+          - name: 'Miru test'
+            platform:  'windows/amd64'
+            os: 'windows-latest'
+          - name: 'Miru test'
+            platform:  'darwin/universal'
+            os: 'macos-latest'
 
     runs-on: ${{ matrix.build.os }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - uses: oven-sh/setup-bun@v2
+        
+      - name: Setup GoLang
+        uses: actions/setup-go@v4
+        with:
+          check-latest: true
+          go-version: 1.23.3       
+      
+      - name: setup bun.js
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - uses: The-Egg-Corp/wails-build-action@v1.4
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Install Linux Wails deps
+        if:   runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install libgtk-3-0 libwebkit2gtk-4.1-dev gcc-aarch64-linux-gnu
+
+      - name: Build Linux App
+        if:  runner.os == 'Linux'
+        run: |
+          echo "building on ${{ matrix.build.platform }}"
+          wails build --platform ${{matrix.build.platform}} -tags webkit2_41 -webview2 "download" -o '${{matrix.build.name}}'
+        shell: bash
+
+      - name: Build MacOS App zipped
+        if: runner.os == 'macOS'
+        run: |
+          echo "building on ${{ matrix.build.platform }}"
+          wails build --platform ${{matrix.build.platform}} -clean
+          zip -r ${{ matrix.build.name }}-macos.zip build/bin/${{ matrix.build.name }}
+        shell: bash
+
+      - name: Build Windows App zipped
+        if: runner.os == 'Windows'
+        run: |
+            echo "building on ${{ matrix.build.platform }}"
+            choco install mingw
+            wails build -platform windows/amd64 -clean
+            Compress-Archive -Path .\build\bin\${{matrix.build.name}}.exe -DestinationPath .\${{matrix.build.name}}-windows-amd64.zip
+        shell: powershell
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
         with:
-          build-name: ${{ matrix.build.name }}
-          build-platform: ${{ matrix.build.platform }}
+          name: ${{ matrix.build.name }}-linux
+          path: build/bin/${{ matrix.build.name }}
+        if: runner.os == 'Linux'
+
+      - name: Upload MacOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.build.name }}-macos
+          path: ${{ matrix.build.name }}-macos.zip
+        if: runner.os == 'macOS'
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.build.name }}-windows
+          path: .\${{matrix.build.name}}-windows-amd64.zip
+        if: runner.os == 'Windows'
