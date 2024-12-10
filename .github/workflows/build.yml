@@ -28,13 +28,13 @@ jobs:
       fail-fast: false
       matrix:
         build:
-          - name: 'Miru test'
+          - name: 'Miru-test'
             platform:  'linux/amd64'
             os: 'ubuntu-latest'
-          - name: 'Miru test'
+          - name: 'Miru-test'
             platform:  'windows/amd64'
             os: 'windows-latest'
-          - name: 'Miru test'
+          - name: 'Miru-test'
             platform:  'darwin/universal'
             os: 'macos-latest'
 
