@@ -47,7 +47,7 @@ jobs:
           - name: 'Miru-test'
             platform:  'windows/amd64'
             os: 'windows-latest'
-          - name: 'Miru-test'
+          - name: 'miru test'
             platform:  'darwin/universal'
             os: 'macos-latest'
 
