@@ -47,7 +47,7 @@ jobs:
           - name: 'Miru-test'
             platform:  'windows/amd64'
             os: 'windows-latest'
-          - name: 'miru test'
+          - name: 'Miru test'
             platform:  'darwin/universal'
             os: 'macos-latest'
 
@@ -117,8 +117,8 @@ jobs:
         run: |
             echo "building on ${{ matrix.build.platform }}"
             choco install mingw
-            wails build -platform windows/amd64 -clean
-            Compress-Archive -Path .\build\bin\${{matrix.build.name}}.exe -DestinationPath .\${{matrix.build.name}}-windows-amd64.zip
+            wails build --platform ${{ matrix.build.platform }} -clean
+            Compress-Archive -Path .\build\bin\${{matrix.build.name}}.exe -DestinationPath .\build\bin\${{matrix.build.name}}-windows-amd64.zip
         shell: powershell
 
       - name: Upload Linux Artifact
@@ -132,12 +132,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.build.name }}-macos
-          path: ${{ matrix.build.name }}-macos.zip
+          path: build/bin/${{ matrix.build.name }}-macos.zip
         if: runner.os == 'macOS'
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.build.name }}-windows
-          path: .\${{matrix.build.name}}-windows-amd64.zip
+          path: build/bin/${{matrix.build.name}}-windows-amd64.zip
         if: runner.os == 'Windows'
