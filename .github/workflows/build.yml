@@ -63,26 +63,18 @@ jobs:
           check-latest: true
           go-version: 1.23.3  
 
-      - id: vars
-        run: |
-          echo "GOCACHE=$(go env GOCACHE)" >> "$GITHUB_OUTPUT"
-          echo "GOMODCACHE=$(go env GOMODCACHE)" >> "$GITHUB_OUTPUT"
-          echo "GOVERSION=$(go env GOVERSION)" >> "$GITHUB_OUTPUT"
-          
-      - uses: actions/cache/restore@v4
+      - name: Cache go modules
+        uses: actions/cache@v4
         with:
+          # /go/bin is for `go install`-ed tools
           path: |
-            ${{ steps.vars.outputs.GOCACHE }}
-            ${{ steps.vars.outputs.GOMODCACHE }}
-          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('go.mod') }}
-      - run: make lint
-      - uses: actions/cache/save@v4
-        with:
-          path: |
-            ${{ steps.vars.outputs.GOCACHE }}
-            ${{ steps.vars.outputs.GOMODCACHE }}
-          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('go.mod') }}     
-                
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ~/go/bin
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: setup bun.js
         uses: oven-sh/setup-bun@v2
         with:
