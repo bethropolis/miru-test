@@ -43,7 +43,7 @@ jobs:
         build:
           - name: 'Miru-test'
             platform:  'linux/amd64'
-            os: 'ubuntu-24.04'
+            os: 'ubuntu-latest'
           - name: 'Miru-test'
             platform:  'windows/amd64'
             os: 'windows-latest'
