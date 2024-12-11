@@ -68,7 +68,7 @@ jobs:
           echo "GOCACHE=$(go env GOCACHE)" >> "$GITHUB_OUTPUT"
           echo "GOMODCACHE=$(go env GOMODCACHE)" >> "$GITHUB_OUTPUT"
           echo "GOVERSION=$(go env GOVERSION)" >> "$GITHUB_OUTPUT"
-
+          
       - uses: actions/cache/restore@v4
         with:
           path: |
@@ -76,7 +76,6 @@ jobs:
             ${{ steps.vars.outputs.GOMODCACHE }}
           key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('go.mod') }}
       - run: make lint
-      
       - uses: actions/cache/save@v4
         with:
           path: |
