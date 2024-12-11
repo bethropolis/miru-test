@@ -1,7 +1,20 @@
 name: Wails Build
 
 on:
-  # Allows workflow to be manually triggered.
+  push:
+    branches: [ "main", "master", "develop" ]  # Add any branches you want to trigger builds
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  pull_request:
+    branches: [ "main", "master" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+
+  # Keep the manual trigger
   workflow_dispatch:
     inputs:
       logLevel:
@@ -45,11 +58,32 @@ jobs:
           submodules: recursive
         
       - name: Setup GoLang
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           check-latest: true
-          go-version: 1.23.3       
+          go-version: 1.23.3  
+
+      - id: vars
+        run: |
+          echo "GOCACHE=$(go env GOCACHE)" >> "$GITHUB_OUTPUT"
+          echo "GOMODCACHE=$(go env GOMODCACHE)" >> "$GITHUB_OUTPUT"
+          echo "GOVERSION=$(go env GOVERSION)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ steps.vars.outputs.GOCACHE }}
+            ${{ steps.vars.outputs.GOMODCACHE }}
+          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('go.mod') }}
+      - run: make lint
       
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ steps.vars.outputs.GOCACHE }}
+            ${{ steps.vars.outputs.GOMODCACHE }}
+          key: golint-v1-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.vars.outputs.GOVERSION }}-${{ hashFiles('go.mod') }}     
+                
       - name: setup bun.js
         uses: oven-sh/setup-bun@v2
         with:
@@ -76,9 +110,9 @@ jobs:
           wails build --platform ${{ matrix.build.platform }} -clean
           echo "Zipping application"
           cd build/bin
+          ls
           zip -r "${{ matrix.build.name }}-macos.zip" "${{ matrix.build.name }}.app"
         shell: bash
-
 
       - name: Build Windows App zipped
         if: runner.os == 'Windows'
