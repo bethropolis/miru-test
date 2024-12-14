@@ -3,6 +3,7 @@
   import CodeMirror from "svelte-codemirror-editor";
   import { javascript } from "@codemirror/lang-javascript";
   import { dracula } from "@ddietr/codemirror-themes/dracula";
+  import {materialLight} from '@ddietr/codemirror-themes/material-light'
   import { code } from "../../lib/store/store";
   import { DB } from "../../lib/db/local";
   import {

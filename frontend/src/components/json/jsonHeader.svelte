@@ -175,7 +175,10 @@
 </Modal>
 
 <div class="flex px-2 pb-2 justify-between items-center">
-  <h2 class="mb-4 font-bold">Result</h2>
+  <div role="tablist" class="tabs m-0  tabs-boxed bg-base-200">
+    <a role="tab" class="tab text-sm">Result</a>
+    <a role="tab" class="tab text-sm tab-disabled">Console</a>
+  </div>
 
   <div class="buttons">
     <button
